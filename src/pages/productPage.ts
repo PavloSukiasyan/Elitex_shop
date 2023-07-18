@@ -21,4 +21,26 @@ export class ProductPage {
   sellingOptionTwoInput = this.sellingOptTwo.locator('div[class*="input-display"]');
   sellingOptionOneName = this.sellingOptOne.locator(".smartrr-selling-plan-group-name div");
   sellingOptionTwoName = this.sellingOptTwo.locator(".smartrr-selling-plan-group-name div");
+
+  deliveryFrequencyTitle = this.prStacked.locator(".smartrr-deliver-frequency");
+  deliverySelect = this.prStacked.locator("select");
+
+  prDescription = this.prStacked.locator('[class*="product__description rte quick-add-hidden"]');
+
+  prButtons = this.prStacked.locator(".product-form__buttons");
+  addToCartBtn = this.prButtons.locator('button[class*="product-form__submit"]');
+  buyItNowBtn = this.prButtons.locator('button[data-testid="Checkout-button"]');
+
+  async getDeliverySelectedValue() {
+    let result: string;
+    const selectValue = await this.deliverySelect.inputValue();
+    if (selectValue === "3253633272") {
+      result = "Monthly";
+    } else if (selectValue === "3253829880") {
+      result = "Weekly";
+    } else {
+      result = "Some wrong option";
+    }
+    return result;
+  }
 }

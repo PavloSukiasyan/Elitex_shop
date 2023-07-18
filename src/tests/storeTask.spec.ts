@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { CommonSteps } from "../pages/commonSteps";
 import { PasswordPage } from "../pages/passwordPage";
 import { ProductPage } from "../pages/productPage";
+import { CheckoutPage } from "../pages/checkoutPage";
 
 test.describe("Tests for Store: ", () => {
   const password = "qwerty";
@@ -17,6 +18,8 @@ test.describe("Tests for Store: ", () => {
 
   test("The user can purchase the product with a subscription", async ({ page }) => {
     const prodPage = new ProductPage(page);
+    const checkoutPage = new CheckoutPage(page);
+
     await expect
       .soft(page)
       .toHaveURL("https://smartrr-staging-automation-1.myshopify.com/products/test-product-cherry");
@@ -39,5 +42,26 @@ test.describe("Tests for Store: ", () => {
     await expect.soft(prodPage.sellingOptionOneInput).toBeChecked({ checked: false });
     await expect.soft(prodPage.sellingOptionTwoName).toHaveText("Subscribe & Save");
     await expect.soft(prodPage.sellingOptionTwoInput).toBeChecked();
+
+    await expect.soft(prodPage.deliveryFrequencyTitle).toHaveText("Deliver Every");
+    await expect.soft(prodPage.deliverySelect).toHaveValue("3253633272");
+    expect.soft(await prodPage.getDeliverySelectedValue()).toBe("Monthly");
+
+    await expect.soft(prodPage.prDescription).toHaveText("sweet cherry");
+
+    await expect.soft(prodPage.addToCartBtn).toBeVisible();
+    await expect.soft(prodPage.buyItNowBtn).toBeVisible();
+    await expect.soft(prodPage.buyItNowBtn).toHaveCSS("color", "rgb(255, 255, 255)");
+    await expect.soft(prodPage.buyItNowBtn).toHaveCSS("background-color", "rgb(18, 18, 18)");
+
+    await prodPage.buyItNowBtn.click();
+
+    await expect(checkoutPage.headerBanner).toBeVisible();
+
+    const checkoutURL = await page.url();
+    console.log("New Urls - ", checkoutURL);
+    expect.soft(checkoutURL).toContain("smartrr-staging-automation-1.myshopify.com/checkouts/bin/");
+
+    await expect(checkoutPage.headerBanner).toHaveText("smartrr-staging-automation-1");
   });
 });

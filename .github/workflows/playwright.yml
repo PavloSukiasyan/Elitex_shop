@@ -19,6 +19,11 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: npm run test:chromium
+      - name: Archive Playwright test artifacts
+        if: always()
+        run: |
+          mkdir -p playwright-report
+          cp -R $GITHUB_WORKSPACE/playwright-report ./playwright-report
       - uses: actions/upload-artifact@v3
         if: always()
         with:

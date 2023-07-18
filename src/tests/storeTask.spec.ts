@@ -6,6 +6,7 @@ import { CheckoutPage } from "../pages/checkoutPage";
 
 test.describe("Tests for Store: ", () => {
   const password = "qwerty";
+  const testProductName = "test-product-cherry";
 
   test.beforeEach(async ({ page }) => {
     const commonSteps = new CommonSteps(page);
@@ -29,7 +30,7 @@ test.describe("Tests for Store: ", () => {
     await expect.soft(prodPage.topLabel).toHaveCSS("font-family", "Assistant, sans-serif");
     await expect.soft(prodPage.topLabel).toHaveCSS("color", "rgb(18, 18, 18)");
 
-    await expect.soft(prodPage.prTitle).toHaveText("test-product-cherry");
+    await expect.soft(prodPage.prTitle).toHaveText(testProductName);
     await expect.soft(prodPage.prTitle).toHaveCSS("font-size", "40px");
 
     await expect.soft(prodPage.prTitle).toHaveCSS("font-family", "Assistant, sans-serif");
@@ -59,9 +60,13 @@ test.describe("Tests for Store: ", () => {
     await expect(checkoutPage.headerBanner).toBeVisible();
 
     const checkoutURL = await page.url();
-    console.log("New Urls - ", checkoutURL);
     expect.soft(checkoutURL).toContain("smartrr-staging-automation-1.myshopify.com/checkouts/bin/");
 
     await expect(checkoutPage.headerBanner).toHaveText("smartrr-staging-automation-1");
+
+    await expect.soft(checkoutPage.quantity).toHaveText("1");
+    await expect.soft(checkoutPage.productName).toHaveText(testProductName);
+    await expect.soft(checkoutPage.price).toHaveText("$2.07");
+    await expect.soft(checkoutPage.deliveryOption).toHaveText("Every month");
   });
 });

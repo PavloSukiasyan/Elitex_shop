@@ -10,6 +10,14 @@ import { defineConfig, devices } from "@playwright/test";
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  timeout: 45 * 1000,
+  expect: {
+    /**
+     * Maximum time expect() should wait for the condition to be met.
+     * For example in `await expect(locator).toHaveText();`
+     */
+    timeout: 10 * 1000,
+  },
   testDir: "./src/tests",
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -30,6 +38,8 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: process.env.CI ? "on-first-retry" : "retain-on-failure",
   },
 
   /* Configure projects for major browsers */

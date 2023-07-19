@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
 import { CommonSteps } from "../pages/commonSteps";
 import { PasswordPage } from "../pages/passwordPage";
 import { ProductPage } from "../pages/productPage";
@@ -68,5 +69,60 @@ test.describe("Tests for Store: ", () => {
     await expect.soft(checkoutPage.productName).toHaveText(testProductName);
     await expect.soft(checkoutPage.price).toHaveText("$2.07");
     await expect.soft(checkoutPage.deliveryOption).toHaveText("Every month");
+
+    await expect.soft(checkoutPage.subtotalLabel).toHaveText("Subtotal");
+    await expect.soft(checkoutPage.subtotalPrice).toHaveText("$2.07");
+    await expect.soft(checkoutPage.shippingLabel).toHaveText("Shipping");
+    await expect.soft(checkoutPage.shippingValue).toHaveText("Calculated at next step");
+    await expect.soft(checkoutPage.totalLabel).toHaveText("Total");
+    await expect.soft(checkoutPage.totalCurrencyLabel).toHaveText("USD");
+    await expect.soft(checkoutPage.totalPrice).toHaveText("$2.07");
+    await expect.soft(checkoutPage.recurringSubtotalLabel).toHaveText("Recurring subtotal");
+    await expect.soft(checkoutPage.recurringSubtotalInfo).toHaveText("$2.07 every month");
+
+    await expect.soft(checkoutPage.googlePayBtn).toBeVisible();
+    await expect.soft(checkoutPage.contactFieldLabel).toHaveText("Contact");
+    await expect.soft(checkoutPage.emailInput).toBeVisible();
+
+    const randomFirstName = faker.person.firstName("male");
+    const randomLastName = faker.person.lastName("male");
+    const randomEmail = faker.internet.email({
+      firstName: randomFirstName,
+      lastName: randomLastName,
+    });
+    // This depends on search result order
+    const addressToSearch = "664 9th Avenue";
+    const city = "New York";
+    const postCode = "10036";
+
+    await checkoutPage.fillInformationForm(
+      randomEmail,
+      randomFirstName,
+      randomLastName,
+      addressToSearch,
+    );
+    await expect.soft(checkoutPage.shippingAreaFieldLabel).toHaveText("Shipping address");
+    await expect.soft(checkoutPage.emailInput).toHaveValue(randomEmail);
+    await expect.soft(checkoutPage.addressInput).toHaveValue(addressToSearch);
+    await expect.soft(checkoutPage.cityInput).toHaveValue(city);
+    await expect.soft(checkoutPage.stateSelect).toHaveValue("NY");
+    expect.soft(await checkoutPage.getStateSelectedValue()).toBe(city);
+    await expect.soft(checkoutPage.postalCodeInput).toHaveValue(postCode);
+
+    await checkoutPage.continueToShippingBtn.click();
+
+    await expect.soft(checkoutPage.sectionReview).toBeVisible();
+    const checkoutURLShipping = await page.url();
+    expect.soft(checkoutURLShipping).toContain("/shipping");
+
+    await expect.soft(checkoutPage.subtotalLabel).toHaveText("Subtotal");
+    await expect.soft(checkoutPage.subtotalPrice).toHaveText("$2.07");
+    await expect.soft(checkoutPage.shippingLabel).toHaveText("Shipping");
+    await expect.soft(checkoutPage.shippingValue).toHaveText("$2.00");
+    await expect.soft(checkoutPage.totalLabel).toHaveText("Total");
+    await expect.soft(checkoutPage.totalCurrencyLabel).toHaveText("USD");
+    await expect.soft(checkoutPage.totalPrice).toHaveText("$4.07");
+    await expect.soft(checkoutPage.recurringSubtotalLabel).toHaveText("Recurring subtotal");
+    await expect.soft(checkoutPage.recurringSubtotalInfo).toHaveText("$2.07 every month");
   });
 });

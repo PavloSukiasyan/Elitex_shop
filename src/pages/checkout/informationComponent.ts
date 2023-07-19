@@ -1,43 +1,15 @@
 import { Page } from "@playwright/test";
 
-export class CheckoutPage {
+export class InformationComponent {
   constructor(private readonly page: Page) {}
 
-  private base = this.page.locator("#app");
-  headerBanner = this.base.locator("header span");
-
-  private asidePart = this.base.locator("aside");
-  private resourceListItems = this.asidePart.locator(
-    'div[role="table"][aria-labelledby="ResourceList0"]',
-  );
-  quantity = this.resourceListItems.locator("p").nth(0);
-  productName = this.resourceListItems.locator("p").nth(1);
-  deliveryOption = this.resourceListItems.locator("p").nth(2);
-  price = this.resourceListItems.locator('span[class*="notranslate"]');
-
-  private moneyLineItems = this.asidePart.locator(
-    'div[role="table"][aria-labelledby="MoneyLine-Heading0"]',
-  );
-  subtotalLabel = this.moneyLineItems.locator("span").nth(0);
-  subtotalPrice = this.moneyLineItems.locator("span").nth(1);
-  shippingLabel = this.moneyLineItems.locator("span").nth(2);
-  shippingValue = this.moneyLineItems.locator("span").nth(3);
-  totalLabel = this.moneyLineItems.locator("span").nth(4);
-
-  totalCurrencyLabel = this.moneyLineItems.locator('abbr[class*="notranslate"]');
-  totalPrice = this.moneyLineItems.locator('strong[class*="notranslate"]');
-
-  private recurringSubtotal = this.asidePart.locator(
-    'section[aria-label="Recurring subtotal"] span',
-  );
-  recurringSubtotalLabel = this.recurringSubtotal.nth(0);
-  recurringSubtotalInfo = this.recurringSubtotal.nth(3);
-
-  private mainCheckout = this.base.locator("#checkout-main");
+  private mainCheckout = this.page.locator("#checkout-main");
   googlePayBtn = this.mainCheckout.locator("#google-pay-button-container button");
+
   private sectionContact = this.mainCheckout.locator('section[aria-label="Contact"]');
   contactFieldLabel = this.sectionContact.locator("#step-section-primary-header");
   emailInput = this.sectionContact.locator("input#email");
+
   private shippingAddress = this.mainCheckout.locator('section[aria-label="Shipping address"]');
   shippingAreaFieldLabel = this.shippingAddress.locator("h2");
   private shippingAreaForm = this.shippingAddress.locator("#shippingAddressForm");
@@ -54,7 +26,7 @@ export class CheckoutPage {
     'input[name="postalCode"]:not([aria-hidden="true"])',
   );
 
-  private addressAutoCompleteComboBox = this.base.locator(
+  private addressAutoCompleteComboBox = this.page.locator(
     '#PortalHost div[aria-labelledby*="autocomplete-title"]',
   );
   addressSuggestionsOptions = this.addressAutoCompleteComboBox.locator("ul#address1-options li");
@@ -62,8 +34,6 @@ export class CheckoutPage {
   continueToShippingBtn = this.mainCheckout.locator(
     'button[type="submit"]:not([aria-hidden="true"])',
   );
-
-  sectionReview = this.base.locator('section[aria-label="Review"]');
 
   async fillInformationForm(
     email: string,

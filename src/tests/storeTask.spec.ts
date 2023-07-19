@@ -9,6 +9,7 @@ import { InformationComponent } from "../pages/checkout/informationComponent";
 import { ShippingComponent } from "../pages/checkout/shippingComponent";
 import { PaymentComponent } from "../pages/checkout/paymentComponent";
 import { SubscriptionAgreementComponent } from "../pages/checkout/subscriptionAgreementComponent";
+import { ThankYouPage } from "../pages/thankYouPage";
 
 test.describe("Tests for Store: ", () => {
   const password = "qwerty";
@@ -31,6 +32,7 @@ test.describe("Tests for Store: ", () => {
     const shippingComp = new ShippingComponent(page);
     const paymentComp = new PaymentComponent(page);
     const subscriptionAgr = new SubscriptionAgreementComponent(page);
+    const thankYouPage = new ThankYouPage(page);
 
     await expect
       .soft(page)
@@ -177,5 +179,14 @@ test.describe("Tests for Store: ", () => {
     await subscriptionAgr.subscriptionCheckbox.check();
     await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked();
     await infoComp.continueToNextStepBtn.click();
+    await page.waitForLoadState("networkidle");
+
+    await expect.soft(thankYouPage.orderNumber).toBeVisible();
+    await expect
+      .soft(thankYouPage.orderHeaderTitle)
+      .toContainText(`Thank you, ${randomFirstName}!`);
+
+    const checkoutURLThankYou = await page.url();
+    expect.soft(checkoutURLThankYou).toContain("/thank_you");
   });
 });

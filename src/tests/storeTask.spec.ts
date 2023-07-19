@@ -1,8 +1,14 @@
 import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
 import { CommonSteps } from "../pages/commonSteps";
 import { PasswordPage } from "../pages/passwordPage";
 import { ProductPage } from "../pages/productPage";
-import { CheckoutPage } from "../pages/checkoutPage";
+import { CheckoutHeaderComponent } from "../pages/checkout/checkoutPage";
+import { AsideTotalComponent } from "../pages/checkout/asideTotalComponent";
+import { InformationComponent } from "../pages/checkout/informationComponent";
+import { ShippingComponent } from "../pages/checkout/shippingComponent";
+import { PaymentComponent } from "../pages/checkout/paymentComponent";
+import { SubscriptionAgreementComponent } from "../pages/checkout/subscriptionAgreementComponent";
 
 test.describe("Tests for Store: ", () => {
   const password = "qwerty";
@@ -19,7 +25,12 @@ test.describe("Tests for Store: ", () => {
 
   test("The user can purchase the product with a subscription", async ({ page }) => {
     const prodPage = new ProductPage(page);
-    const checkoutPage = new CheckoutPage(page);
+    const headerComp = new CheckoutHeaderComponent(page);
+    const asideTotalComp = new AsideTotalComponent(page);
+    const infoComp = new InformationComponent(page);
+    const shippingComp = new ShippingComponent(page);
+    const paymentComp = new PaymentComponent(page);
+    const subscriptionAgr = new SubscriptionAgreementComponent(page);
 
     await expect
       .soft(page)
@@ -57,16 +68,114 @@ test.describe("Tests for Store: ", () => {
 
     await prodPage.buyItNowBtn.click();
 
-    await expect(checkoutPage.headerBanner).toBeVisible();
+    await expect(headerComp.headerBanner).toBeVisible();
 
     const checkoutURL = await page.url();
     expect.soft(checkoutURL).toContain("smartrr-staging-automation-1.myshopify.com/checkouts/bin/");
 
-    await expect(checkoutPage.headerBanner).toHaveText("smartrr-staging-automation-1");
+    await expect(headerComp.headerBanner).toHaveText("smartrr-staging-automation-1");
 
-    await expect.soft(checkoutPage.quantity).toHaveText("1");
-    await expect.soft(checkoutPage.productName).toHaveText(testProductName);
-    await expect.soft(checkoutPage.price).toHaveText("$2.07");
-    await expect.soft(checkoutPage.deliveryOption).toHaveText("Every month");
+    await expect.soft(asideTotalComp.quantity).toHaveText("1");
+    await expect.soft(asideTotalComp.productName).toHaveText(testProductName);
+    await expect.soft(asideTotalComp.price).toHaveText("$2.07");
+    await expect.soft(asideTotalComp.deliveryOption).toHaveText("Every month");
+
+    await expect.soft(asideTotalComp.subtotalLabel).toHaveText("Subtotal");
+    await expect.soft(asideTotalComp.subtotalPrice).toHaveText("$2.07");
+    await expect.soft(asideTotalComp.shippingLabel).toHaveText("Shipping");
+    await expect.soft(asideTotalComp.shippingValue).toHaveText("Calculated at next step");
+    await expect.soft(asideTotalComp.totalLabel).toHaveText("Total");
+    await expect.soft(asideTotalComp.totalCurrencyLabel).toHaveText("USD");
+    await expect.soft(asideTotalComp.totalPrice).toHaveText("$2.07");
+    await expect.soft(asideTotalComp.recurringSubtotalLabel).toHaveText("Recurring subtotal");
+    await expect.soft(asideTotalComp.recurringSubtotalInfo).toHaveText("$2.07 every month");
+
+    await expect.soft(infoComp.googlePayBtn).toBeVisible();
+    await expect.soft(infoComp.contactFieldLabel).toHaveText("Contact");
+    await expect.soft(infoComp.emailInput).toBeVisible();
+
+    const randomFirstName = faker.person.firstName("male");
+    const randomLastName = faker.person.lastName("male");
+    const randomEmail = faker.internet.email({
+      firstName: randomFirstName,
+      lastName: randomLastName,
+    });
+
+    // This depends on search result order
+    const addressToSearch = "664 9th Avenue";
+    const city = "New York";
+    const postCode = "10036";
+
+    await infoComp.fillInformationForm(
+      randomEmail,
+      randomFirstName,
+      randomLastName,
+      addressToSearch,
+    );
+    await expect.soft(infoComp.shippingAreaFieldLabel).toHaveText("Shipping address");
+    await expect.soft(infoComp.emailInput).toHaveValue(randomEmail);
+    await expect.soft(infoComp.addressInput).toHaveValue(addressToSearch);
+    await expect.soft(infoComp.cityInput).toHaveValue(city);
+    await expect.soft(infoComp.stateSelect).toHaveValue("NY");
+    expect.soft(await infoComp.getStateSelectedValue()).toBe(city);
+    await expect.soft(infoComp.postalCodeInput).toHaveValue(postCode);
+
+    await infoComp.continueToNextStepBtn.click();
+
+    await expect.soft(shippingComp.email).toHaveText(randomEmail);
+    await expect
+      .soft(shippingComp.address)
+      .toHaveText(`${addressToSearch}, ${city} NY ${postCode}, United States`);
+    await expect.soft(shippingComp.descriptionOfShipping).toHaveText("$2 if order price is < $25");
+    await expect.soft(shippingComp.priceOfShipping).toHaveText("$2.00");
+    await expect.soft(shippingComp.shipping).toBeHidden();
+
+    const checkoutURLShipping = await page.url();
+    expect.soft(checkoutURLShipping).toContain("/shipping");
+
+    await expect(headerComp.headerBanner).toBeVisible();
+
+    await expect.soft(asideTotalComp.subtotalLabel).toHaveText("Subtotal");
+    await expect.soft(asideTotalComp.subtotalPrice).toHaveText("$2.07");
+    await expect.soft(asideTotalComp.shippingLabel).toHaveText("Shipping");
+    await expect.soft(asideTotalComp.shippingValue).toHaveText("$2.00");
+    await expect.soft(asideTotalComp.totalLabel).toHaveText("Total");
+    await expect.soft(asideTotalComp.totalCurrencyLabel).toHaveText("USD");
+    await expect.soft(asideTotalComp.totalPrice).toHaveText("$4.07");
+    await expect.soft(asideTotalComp.recurringSubtotalLabel).toHaveText("Recurring subtotal");
+    await expect.soft(asideTotalComp.recurringSubtotalInfo).toHaveText("$2.07 every month");
+
+    await infoComp.continueToNextStepBtn.click();
+
+    await expect
+      .soft(shippingComp.address)
+      .toHaveText(`${addressToSearch}, ${city} NY ${postCode}, United States`);
+    await expect.soft(shippingComp.descriptionOfShipping).toHaveText("$2 if order price is < $25");
+    await expect.soft(shippingComp.priceOfShipping).toHaveText("$2.00");
+    await expect.soft(shippingComp.shipping).toHaveText("$2 if order price is < $25 · $2.00");
+
+    const checkoutURLPayment = await page.url();
+    expect.soft(checkoutURLPayment).toContain("/payment");
+
+    await expect.soft(asideTotalComp.subtotalLabel).toHaveText("Subtotal");
+    await expect.soft(asideTotalComp.subtotalPrice).toHaveText("$2.07");
+    await expect.soft(asideTotalComp.shippingLabel).toHaveText("Shipping");
+    await expect.soft(asideTotalComp.shippingValue).toHaveText("$2.00");
+    await expect.soft(asideTotalComp.totalLabel).toHaveText("Total");
+    await expect.soft(asideTotalComp.totalCurrencyLabel).toHaveText("USD");
+    await expect.soft(asideTotalComp.totalPrice).toHaveText("$4.07");
+    await expect.soft(asideTotalComp.recurringSubtotalLabel).toHaveText("Recurring subtotal");
+    await expect.soft(asideTotalComp.recurringSubtotalInfo).toHaveText("$2.07 every month");
+
+    await paymentComp.fillPaymentCardDetails(randomFirstName, randomLastName);
+    await expect.soft(subscriptionAgr.alertMessage).toBeHidden();
+    await infoComp.continueToNextStepBtn.click();
+
+    await expect.soft(subscriptionAgr.alertMessage).toBeVisible();
+    await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked({ checked: false });
+
+    await subscriptionAgr.subscriptionCheckbox.check();
+    await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked();
+    await infoComp.continueToNextStepBtn.click();
   });
 });

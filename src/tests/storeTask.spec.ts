@@ -188,7 +188,7 @@ test.describe("Tests for Store: ", () => {
     await subscriptionAgr.subscriptionCheckbox.check();
     await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked();
     await infoComp.continueToNextStepBtn.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState();
 
     await expect.soft(thankYouPage.orderNumber).toBeVisible();
     await expect
@@ -338,7 +338,7 @@ test.describe("Tests for Store: ", () => {
     await subscriptionAgr.subscriptionCheckbox.check();
     await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked();
     await infoComp.continueToNextStepBtn.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState();
 
     await expect.soft(thankYouPage.orderNumber).toBeVisible();
     await expect

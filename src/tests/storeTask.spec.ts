@@ -7,6 +7,8 @@ import { CheckoutHeaderComponent } from "../pages/checkout/checkoutPage";
 import { AsideTotalComponent } from "../pages/checkout/asideTotalComponent";
 import { InformationComponent } from "../pages/checkout/informationComponent";
 import { ShippingComponent } from "../pages/checkout/shippingComponent";
+import { PaymentComponent } from "../pages/checkout/paymentComponent";
+import { SubscriptionAgreementComponent } from "../pages/checkout/subscriptionAgreementComponent";
 
 test.describe("Tests for Store: ", () => {
   const password = "qwerty";
@@ -26,7 +28,9 @@ test.describe("Tests for Store: ", () => {
     const headerComp = new CheckoutHeaderComponent(page);
     const asideTotalComp = new AsideTotalComponent(page);
     const infoComp = new InformationComponent(page);
-    const shippingComponent = new ShippingComponent(page);
+    const shippingComp = new ShippingComponent(page);
+    const paymentComp = new PaymentComponent(page);
+    const subscriptionAgr = new SubscriptionAgreementComponent(page);
 
     await expect
       .soft(page)
@@ -116,9 +120,16 @@ test.describe("Tests for Store: ", () => {
     expect.soft(await infoComp.getStateSelectedValue()).toBe(city);
     await expect.soft(infoComp.postalCodeInput).toHaveValue(postCode);
 
-    await infoComp.continueToShippingBtn.click();
+    await infoComp.continueToNextStepBtn.click();
 
-    await expect.soft(shippingComponent.sectionReview).toBeVisible();
+    await expect.soft(shippingComp.email).toHaveText(randomEmail);
+    await expect
+      .soft(shippingComp.address)
+      .toHaveText(`${addressToSearch}, ${city} NY ${postCode}, United States`);
+    await expect.soft(shippingComp.descriptionOfShipping).toHaveText("$2 if order price is < $25");
+    await expect.soft(shippingComp.priceOfShipping).toHaveText("$2.00");
+    await expect.soft(shippingComp.shipping).toBeHidden();
+
     const checkoutURLShipping = await page.url();
     expect.soft(checkoutURLShipping).toContain("/shipping");
 
@@ -133,5 +144,38 @@ test.describe("Tests for Store: ", () => {
     await expect.soft(asideTotalComp.totalPrice).toHaveText("$4.07");
     await expect.soft(asideTotalComp.recurringSubtotalLabel).toHaveText("Recurring subtotal");
     await expect.soft(asideTotalComp.recurringSubtotalInfo).toHaveText("$2.07 every month");
+
+    await infoComp.continueToNextStepBtn.click();
+
+    await expect
+      .soft(shippingComp.address)
+      .toHaveText(`${addressToSearch}, ${city} NY ${postCode}, United States`);
+    await expect.soft(shippingComp.descriptionOfShipping).toHaveText("$2 if order price is < $25");
+    await expect.soft(shippingComp.priceOfShipping).toHaveText("$2.00");
+    await expect.soft(shippingComp.shipping).toHaveText("$2 if order price is < $25 · $2.00");
+
+    const checkoutURLPayment = await page.url();
+    expect.soft(checkoutURLPayment).toContain("/payment");
+
+    await expect.soft(asideTotalComp.subtotalLabel).toHaveText("Subtotal");
+    await expect.soft(asideTotalComp.subtotalPrice).toHaveText("$2.07");
+    await expect.soft(asideTotalComp.shippingLabel).toHaveText("Shipping");
+    await expect.soft(asideTotalComp.shippingValue).toHaveText("$2.00");
+    await expect.soft(asideTotalComp.totalLabel).toHaveText("Total");
+    await expect.soft(asideTotalComp.totalCurrencyLabel).toHaveText("USD");
+    await expect.soft(asideTotalComp.totalPrice).toHaveText("$4.07");
+    await expect.soft(asideTotalComp.recurringSubtotalLabel).toHaveText("Recurring subtotal");
+    await expect.soft(asideTotalComp.recurringSubtotalInfo).toHaveText("$2.07 every month");
+
+    await paymentComp.fillPaymentCardDetails(randomFirstName, randomLastName);
+    await expect.soft(subscriptionAgr.alertMessage).toBeHidden();
+    await infoComp.continueToNextStepBtn.click();
+
+    await expect.soft(subscriptionAgr.alertMessage).toBeVisible();
+    await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked({ checked: false });
+
+    await subscriptionAgr.subscriptionCheckbox.check();
+    await expect.soft(subscriptionAgr.subscriptionCheckbox).toBeChecked();
+    await infoComp.continueToNextStepBtn.click();
   });
 });

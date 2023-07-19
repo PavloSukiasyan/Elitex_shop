@@ -31,7 +31,7 @@ export class InformationComponent {
   );
   addressSuggestionsOptions = this.addressAutoCompleteComboBox.locator("ul#address1-options li");
 
-  continueToShippingBtn = this.mainCheckout.locator(
+  continueToNextStepBtn = this.mainCheckout.locator(
     'button[type="submit"]:not([aria-hidden="true"])',
   );
 

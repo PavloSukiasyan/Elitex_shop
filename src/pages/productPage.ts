@@ -12,6 +12,7 @@ export class ProductPage {
   prPrice = this.prStacked.locator("span[data-smartrr-subscribe-price]");
 
   prQuantityInput = this.prStacked.locator("input.quantity__input");
+  prQuantityIncrease = this.prStacked.locator('button[name="plus"]');
 
   prSellingPlanGroups = this.prStacked.locator("[data-smartrr-selling-plan-groups]");
 
